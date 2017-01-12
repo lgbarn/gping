@@ -56,6 +56,7 @@ func main() {
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
 		stdInStat = true
 		stdInScanner := bufio.NewScanner(os.Stdin)
+		stdInScanner.Split(bufio.ScanWords)
 		for stdInScanner.Scan() {
 			stdInServer = stdInScanner.Text()
 			s := Server{name: stdInServer}
