@@ -23,7 +23,6 @@ type Server struct {
 func (s *Server) isPingable() bool {
 	p := fastping.NewPinger()
 	var status bool
-	//name := "127.0.0.1"
 	name := s.name
 	ra, err := net.ResolveIPAddr("ip:icmp", name)
 	if err != nil {
@@ -35,14 +34,10 @@ func (s *Server) isPingable() bool {
 	} else {
 		p.Network("udp")
 	}
-	//p.AddIPAddr(ra)
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-		//fmt.Printf("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
-		//fmt.Printf("%s: is pingable\n", name)
 		status = true
 	}
 	p.OnIdle = func() {
-		//	fmt.Println("finish")
 	}
 	err = p.Run()
 	if err != nil {
