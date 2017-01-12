@@ -44,14 +44,20 @@ func (s *Server) isPingable() bool {
 		fmt.Println(err)
 		status = false
 	}
+	if status == true {
+		fmt.Printf("%s: is pingable\n", name)
+	} else {
+		fmt.Printf("%s: is NOT pingable\n", name)
+	}
 	return status
 }
 
 // main This program is used to run "ps -ef | grep <process>"
 func main() {
 	var stdInStat bool
-	var servers []*Server
 	var stdInServer string
+	var path string
+	var line string
 	stat, _ := os.Stdin.Stat()
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
 		stdInStat = true
@@ -61,13 +67,11 @@ func main() {
 			stdInServer = stdInScanner.Text()
 			s := Server{name: stdInServer}
 			s.pingable = s.isPingable()
-			servers = append(servers, &s)
 			if err := stdInScanner.Err(); err != nil {
 				fmt.Fprintln(os.Stderr, "reading standard input:", err)
 			}
 		}
 	}
-	var path string
 	if os.Args != nil && len(os.Args) > 1 {
 		path = os.Args[1]
 		file, err := os.Open(path)
@@ -76,22 +80,13 @@ func main() {
 		}
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
-		var line string
 		for scanner.Scan() {
 			line = scanner.Text()
 			s := Server{name: line}
 			s.pingable = s.isPingable()
-			servers = append(servers, &s)
 		}
 	}
 	if os.Args != nil && len(os.Args) == 1 && stdInStat == false {
 		fmt.Fprintln(os.Stderr, "No input provided")
-	}
-	for _, server := range servers {
-		if server.pingable == true {
-			fmt.Printf("%s: is pingable\n", server.name)
-		} else {
-			fmt.Printf("%s: is NOT pingable\n", server.name)
-		}
 	}
 }
