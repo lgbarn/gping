@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/tatsushid/go-fastping"
@@ -29,6 +30,11 @@ func (s *Server) isPingable() bool {
 		return false
 	}
 	p.AddIPAddr(ra)
+	if runtime.GOOS == "linux" {
+		p.Network("ip")
+	} else {
+		p.Network("udp")
+	}
 	//p.AddIPAddr(ra)
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
 		//fmt.Printf("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
@@ -50,11 +56,16 @@ func (s *Server) isPingable() bool {
 func main() {
 	var stdInStat bool
 	var servers []*Server
+	var stdInServer string
 	stat, _ := os.Stdin.Stat()
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
 		stdInStat = true
 		stdInScanner := bufio.NewScanner(os.Stdin)
 		for stdInScanner.Scan() {
+			stdInServer = stdInScanner.Text()
+			s := Server{name: stdInServer}
+			s.pingable = s.isPingable()
+			servers = append(servers, &s)
 			if err := stdInScanner.Err(); err != nil {
 				fmt.Fprintln(os.Stderr, "reading standard input:", err)
 			}
