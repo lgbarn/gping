@@ -12,9 +12,10 @@ import (
 
 // Server struct defines what is needed to ping servers
 type Server struct {
-	name  string
-	ip    string
-	valid bool
+	name     string
+	ip       string
+	valid    bool
+	pingable bool
 }
 
 func checkValidIP(ip string) bool {
@@ -51,7 +52,6 @@ func main() {
 		stdInStat = true
 		stdInScanner := bufio.NewScanner(os.Stdin)
 		for stdInScanner.Scan() {
-			//fmt.Println(stdInScanner.Text())
 			if err := stdInScanner.Err(); err != nil {
 				fmt.Fprintln(os.Stderr, "reading standard input:", err)
 			}
@@ -60,7 +60,6 @@ func main() {
 	var path string
 	if os.Args != nil && len(os.Args) > 1 {
 		path = os.Args[1]
-		//path := "testfile"
 		file, err := os.Open(path)
 		if err != nil {
 			log.Fatal(err)
@@ -70,13 +69,10 @@ func main() {
 		var line string
 		for scanner.Scan() {
 			line = scanner.Text()
-			//var item string
 			if checkValidIP(line) {
-				//fmt.Printf("%s:valid\n", line)
 				s := Server{ip: line}
 				servers = append(servers, &s)
 			} else {
-				//fmt.Printf("%s:NOTvalid\n", line)
 				s := Server{name: line}
 				servers = append(servers, &s)
 			}
@@ -85,10 +81,13 @@ func main() {
 	if os.Args != nil && len(os.Args) == 1 && stdInStat == false {
 		fmt.Fprintln(os.Stderr, "No input provided")
 	}
-	for index, server := range servers {
-		fmt.Printf("%d, %s, %s, %v\n", index, server.name, server.ip, server.valid)
+	for _, server := range servers {
+		if checkValidIP(server.ip) {
+			(*server).valid = true
+		}
+		if server.name == "" {
+			(*server).name = server.ip
+		}
+		fmt.Printf("%s, %s, %v, %v\n", server.name, server.ip, server.valid, server.pingable)
 	}
-	//for server := range servers {
-	//fmt.Printf("%T: %vs\n", server, server)
-	//}
 }
